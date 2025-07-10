@@ -28,6 +28,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewOutlineProvider
+import android.widget.ImageView
 import android.widget.FrameLayout
 import androidx.annotation.ColorInt
 import androidx.core.view.isInvisible
@@ -41,8 +42,10 @@ import com.android.quickstep.task.thumbnail.TaskThumbnailUiState.LiveTile
 import com.android.quickstep.task.thumbnail.TaskThumbnailUiState.Snapshot
 import com.android.quickstep.task.thumbnail.TaskThumbnailUiState.SnapshotSplash
 import com.android.quickstep.task.thumbnail.TaskThumbnailUiState.Uninitialized
+import com.android.quickstep.util.AppLockHelper
 import com.android.quickstep.views.FixedSizeImageView
 import com.android.quickstep.views.TaskThumbnailViewHeader
+import com.android.systemui.shared.recents.model.Task
 
 class TaskThumbnailView : FrameLayout, ViewPool.Reusable {
     private val scrimView: View by lazy { findViewById(R.id.task_thumbnail_scrim) }
@@ -59,6 +62,8 @@ class TaskThumbnailView : FrameLayout, ViewPool.Reusable {
     private var taskThumbnailViewHeader: TaskThumbnailViewHeader? = null
 
     private var uiState: TaskThumbnailUiState = Uninitialized
+    
+    private var task: Task? = null
 
     /**
      * Sets the outline bounds of the view. Default to use view's bound as outline when set to null.
@@ -123,6 +128,23 @@ class TaskThumbnailView : FrameLayout, ViewPool.Reusable {
         resetViews()
     }
 
+    fun bind(tsk: Task) {
+        task = tsk
+    }
+    
+    fun isTopAppLocked(): Boolean {
+        val pkg = task?.key?.packageName ?: return false
+        val result = AppLockHelper.INSTANCE.get(context).isAppLocked(pkg)
+        return result
+    }
+
+    fun drawOverlayThumbnail() {
+        thumbnailView.setImageResource(R.drawable.ic_recents_visibility)
+        thumbnailView.scaleType = ImageView.ScaleType.CENTER
+        thumbnailView.isInvisible = false
+        drawBackground(R.color.materialColorSurfaceContainerHigh)
+    }
+    
     fun setState(state: TaskThumbnailUiState, taskId: Int? = null) {
         if (uiState == state) return
         logDebug("taskId: $taskId - uiState changed from: $uiState to: $state")
@@ -217,9 +239,13 @@ class TaskThumbnailView : FrameLayout, ViewPool.Reusable {
             taskThumbnailViewHeader?.setHeader(snapshot.header)
         }
 
-        drawBackground(snapshot.backgroundColor)
-        thumbnailView.setImageBitmap(snapshot.bitmap)
-        thumbnailView.isInvisible = false
+        if (isTopAppLocked()) {
+            drawOverlayThumbnail()
+        } else {
+            drawBackground(snapshot.backgroundColor)
+            thumbnailView.setImageBitmap(snapshot.bitmap)
+            thumbnailView.isInvisible = false
+        }
     }
 
     fun setImageMatrix(matrix: Matrix) {
