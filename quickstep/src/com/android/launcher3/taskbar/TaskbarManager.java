@@ -145,6 +145,8 @@ public class TaskbarManager implements DisplayDecorationListener, OnSharedPrefer
 
     private static final Uri NAV_BAR_KIDS_MODE = Settings.Secure.getUriFor(
             Settings.Secure.NAV_BAR_KIDS_MODE);
+    private static final Uri NAVBAR_IME_SPACE_URI = Settings.Secure.getUriFor(
+            "navbar_ime_space");            
 
     public static final Uri NAV_BAR_INVERSE = Settings.Secure.getUriFor(
             "sysui_nav_bar_inverse");
@@ -477,6 +479,8 @@ public class TaskbarManager implements DisplayDecorationListener, OnSharedPrefer
                 .register(NAV_BAR_INVERSE, mOnSettingsChangeListener);
         SettingsCache.INSTANCE.get(mPrimaryWindowContext)
                 .register(NAVIGATION_BAR_HINT, mOnTaskBarChangeListener);
+        SettingsCache.INSTANCE.get(mPrimaryWindowContext)
+                .register(NAVBAR_IME_SPACE_URI, mOnSettingsChangeListener);                
         mEnableTaskBarListener = c -> {
             // Create the illusion of this taking effect immediately
             // Also needed because TaskbarManager inits before SystemUiProxy on start
@@ -1169,6 +1173,8 @@ public class TaskbarManager implements DisplayDecorationListener, OnSharedPrefer
                 .unregister(NAV_BAR_INVERSE, mOnSettingsChangeListener);
         SettingsCache.INSTANCE.get(mPrimaryWindowContext)
                 .unregister(NAVIGATION_BAR_HINT, mOnTaskBarChangeListener);
+        SettingsCache.INSTANCE.get(mPrimaryWindowContext)
+                .unregister(NAVBAR_IME_SPACE_URI, mOnSettingsChangeListener);                        
         SystemDecorationChangeObserver.getINSTANCE().get(mPrimaryWindowContext)
                 .unregisterDisplayDecorationListener(this);
         debugPrimaryTaskbar("destroy: unregistering component callbacks");

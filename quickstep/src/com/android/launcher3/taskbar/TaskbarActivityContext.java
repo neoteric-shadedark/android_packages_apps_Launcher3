@@ -282,7 +282,9 @@ public class TaskbarActivityContext extends BaseTaskbarContext {
                 mDeviceProfile.inv.numRows,
                 mDeviceProfile.inv.numColumns);
 
-        mImeDrawsImeNavBar = getBoolByName(IME_DRAWS_IME_NAV_BAR_RES_NAME, resources, false);
+        boolean showImeSpace = Settings.Secure.getInt(windowContext.getContentResolver(),
+                "navbar_ime_space", 1) == 1;
+        mImeDrawsImeNavBar = showImeSpace && getBoolByName(IME_DRAWS_IME_NAV_BAR_RES_NAME, resources, false);
         mIsSafeModeEnabled = TraceHelper.allowIpcs("isSafeMode",
                 () -> getPackageManager().isSafeMode());
 
@@ -503,7 +505,9 @@ public class TaskbarActivityContext extends BaseTaskbarContext {
  *                     for the taskbar create/recreate process.
      */
     public void init(@NonNull TaskbarSharedState sharedState, int duration) {
-        mImeDrawsImeNavBar = getBoolByName(IME_DRAWS_IME_NAV_BAR_RES_NAME, getResources(), false);
+        boolean showImeSpace = Settings.Secure.getInt(getContentResolver(),
+                "navbar_ime_space", 1) == 1;
+        mImeDrawsImeNavBar = showImeSpace && getBoolByName(IME_DRAWS_IME_NAV_BAR_RES_NAME, getResources(), false);
         mLastRequestedNonFullscreenSize = getDefaultTaskbarWindowSize();
         mWindowLayoutParams = createAllWindowParams();
         mLastUpdatedLayoutParams = new WindowManager.LayoutParams();
